@@ -71,10 +71,16 @@
         }
       }
     },
-    "AppLogGroup": {
+    "TestDashfunctionLogGroup": {
       "Type": "AWS::Logs::LogGroup",
       "Properties": {
-        "LogGroupName": "/aws/lambda/team-matcher-api-dev-app"
+        "LogGroupName": "/aws/lambda/team-matcher-api-get-member"
+      }
+    },
+    "AccessDashtokenDashauthorizerLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/team-matcher-api-access-token-authorizer"
       }
     },
     "IamRoleLambdaExecution": {
@@ -119,7 +125,10 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-dev*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-get-member:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-access-token-authorizer:*"
                     }
                   ]
                 },
@@ -130,7 +139,10 @@
                   ],
                   "Resource": [
                     {
-                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-dev*:*:*"
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-get-member:*:*"
+                    },
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-access-token-authorizer:*:*"
                     }
                   ]
                 }
@@ -154,18 +166,18 @@
         }
       }
     },
-    "AppLambdaFunction": {
+    "TestDashfunctionLambdaFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/team-matcher-api/dev/1662874319518-2022-09-11T05:31:59.518Z/team-matcher-api.zip"
+          "S3Key": "serverless/team-matcher-api/dev/1662910571336-2022-09-11T15:36:11.336Z/team-matcher-api.zip"
         },
-        "Handler": "index.handler",
+        "Handler": "functions/member/getMember.handler",
         "Runtime": "nodejs16.x",
-        "FunctionName": "team-matcher-api-dev-app",
+        "FunctionName": "team-matcher-api-get-member",
         "MemorySize": 1024,
         "Timeout": 6,
         "Role": {
@@ -176,17 +188,59 @@
         }
       },
       "DependsOn": [
-        "AppLogGroup"
+        "TestDashfunctionLogGroup"
       ]
     },
-    "AppLambdaVersionzOduE3p3YKKC2cbbZUIBd5c0yUe6dE6Db5sT5KKuk": {
+    "AccessDashtokenDashauthorizerLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/team-matcher-api/dev/1662910571336-2022-09-11T15:36:11.336Z/team-matcher-api.zip"
+        },
+        "Handler": "functions/authorizer/accessTokenAuthorizer.handler",
+        "Runtime": "nodejs16.x",
+        "FunctionName": "team-matcher-api-access-token-authorizer",
+        "MemorySize": 1024,
+        "Timeout": 6,
+        "Environment": {
+          "Variables": {
+            "REGION": "ap-northeast-2",
+            "USER_POOL_ID": "ap-northeast-2_9dMV2NiE4"
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "AccessDashtokenDashauthorizerIamRoleLambdaExecution",
+            "Arn"
+          ]
+        }
+      },
+      "DependsOn": [
+        "AccessDashtokenDashauthorizerIamRoleLambdaExecution",
+        "AccessDashtokenDashauthorizerLogGroup"
+      ]
+    },
+    "TestDashfunctionLambdaVersionpaFwjfzLlS09YEhpulgyFprxFlFFJb5LyCeMR7DJ4": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
-          "Ref": "AppLambdaFunction"
+          "Ref": "TestDashfunctionLambdaFunction"
         },
-        "CodeSha256": "ZX5UUda5hJOW0tppH23cHJ6vGa3XhES7HULUBsB6L6o="
+        "CodeSha256": "xK9IZxMdCNzWEbG+YUoCieVGJzT7nfQwRV4eWP4rsFA="
+      }
+    },
+    "AccessDashtokenDashauthorizerLambdaVersionmT0Zm8MMIGtFFZ1sECA2zN56F3FyJ8DoTmzI3HPpHPk": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "AccessDashtokenDashauthorizerLambdaFunction"
+        },
+        "CodeSha256": "xK9IZxMdCNzWEbG+YUoCieVGJzT7nfQwRV4eWP4rsFA="
       }
     },
     "ApiGatewayRestApi": {
@@ -201,22 +255,82 @@
         "Policy": ""
       }
     },
-    "ApiGatewayMethodAny": {
-      "Type": "AWS::ApiGateway::Method",
+    "ApiGatewayResourceMember": {
+      "Type": "AWS::ApiGateway::Resource",
       "Properties": {
-        "HttpMethod": "ANY",
-        "RequestParameters": {},
-        "ResourceId": {
+        "ParentId": {
           "Fn::GetAtt": [
             "ApiGatewayRestApi",
             "RootResourceId"
           ]
         },
+        "PathPart": "member",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodMemberOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,Authorization,Cache-Control,Accept-Enconding,Content-Encoding'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceMember"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodMemberGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceMember"
+        },
         "RestApiId": {
           "Ref": "ApiGatewayRestApi"
         },
         "ApiKeyRequired": false,
-        "AuthorizationType": "NONE",
+        "AuthorizationType": "CUSTOM",
+        "AuthorizerId": {
+          "Ref": "AccessDashtokenDashauthorizerApiGatewayAuthorizer"
+        },
         "Integration": {
           "IntegrationHttpMethod": "POST",
           "Type": "AWS_PROXY",
@@ -235,7 +349,7 @@
                 ":lambda:path/2015-03-31/functions/",
                 {
                   "Fn::GetAtt": [
-                    "AppLambdaFunction",
+                    "TestDashfunctionLambdaFunction",
                     "Arn"
                   ]
                 },
@@ -246,11 +360,44 @@
         },
         "MethodResponses": []
       },
-      "DependsOn": [
-        "AppLambdaPermissionApiGateway"
-      ]
+      "DependsOn": "AccessDashtokenDashauthorizerApiGatewayAuthorizer"
     },
-    "ApiGatewayDeployment1662874313352": {
+    "AccessDashtokenDashauthorizerApiGatewayAuthorizer": {
+      "Type": "AWS::ApiGateway::Authorizer",
+      "Properties": {
+        "AuthorizerResultTtlInSeconds": 0,
+        "IdentitySource": "method.request.header.Authorization",
+        "Name": "access-token-authorizer",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "AuthorizerUri": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":apigateway:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":lambda:path/2015-03-31/functions/",
+              {
+                "Fn::GetAtt": [
+                  "AccessDashtokenDashauthorizerLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "/invocations"
+            ]
+          ]
+        },
+        "Type": "TOKEN"
+      }
+    },
+    "ApiGatewayDeployment1662910564124": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -259,15 +406,16 @@
         "StageName": "dev"
       },
       "DependsOn": [
-        "ApiGatewayMethodAny"
+        "ApiGatewayMethodMemberOptions",
+        "ApiGatewayMethodMemberGet"
       ]
     },
-    "AppLambdaPermissionApiGateway": {
+    "TestDashfunctionLambdaPermissionApiGateway": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
         "FunctionName": {
           "Fn::GetAtt": [
-            "AppLambdaFunction",
+            "TestDashfunctionLambdaFunction",
             "Arn"
           ]
         },
@@ -298,6 +446,118 @@
           ]
         }
       }
+    },
+    "AccessDashtokenDashauthorizerLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AccessDashtokenDashauthorizerLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "AccessDashtokenDashauthorizerIamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "team-matcher-api",
+                  "dev",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/team-matcher-api-access-token-authorizer:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "lambda:InvokeFunction"
+                  ],
+                  "Resource": "*"
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "team-matcher-api",
+              "dev",
+              "access-token-authorizer",
+              {
+                "Ref": "AWS::Region"
+              }
+            ]
+          ]
+        },
+        "ManagedPolicyArns": []
+      }
     }
   },
   "Outputs": {
@@ -309,13 +569,22 @@
         "Name": "sls-team-matcher-api-dev-ServerlessDeploymentBucketName"
       }
     },
-    "AppLambdaFunctionQualifiedArn": {
+    "TestDashfunctionLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "AppLambdaVersionzOduE3p3YKKC2cbbZUIBd5c0yUe6dE6Db5sT5KKuk"
+        "Ref": "TestDashfunctionLambdaVersionpaFwjfzLlS09YEhpulgyFprxFlFFJb5LyCeMR7DJ4"
       },
       "Export": {
-        "Name": "sls-team-matcher-api-dev-AppLambdaFunctionQualifiedArn"
+        "Name": "sls-team-matcher-api-dev-TestDashfunctionLambdaFunctionQualifiedArn"
+      }
+    },
+    "AccessDashtokenDashauthorizerLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "AccessDashtokenDashauthorizerLambdaVersionmT0Zm8MMIGtFFZ1sECA2zN56F3FyJ8DoTmzI3HPpHPk"
+      },
+      "Export": {
+        "Name": "sls-team-matcher-api-dev-AccessDashtokenDashauthorizerLambdaFunctionQualifiedArn"
       }
     },
     "ServiceEndpoint": {

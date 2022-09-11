@@ -2,6 +2,8 @@ service: team-matcher-api
 
 plugins:
   - serverless-offline
+  - serverless-iam-roles-per-function
+  - serverless-offline-local-authorizers-plugin
 
 provider:
   name: aws
@@ -9,9 +11,38 @@ provider:
   stage: dev
   region: ap-northeast-2
 
+custom:
+  allowed-headers:
+    - Content-Type
+    - Authorization
+    - Cache-Control
+    - Accept-Enconding
+    - Content-Encoding
+
 functions:
-  app:
-    handler: index.handler
+  test-function:
+    handler: functions/member/getMember.handler
+    name: ${self:service}-get-member
     events:
-      - http: ANY /
+      - http:
+          path: /member
+          method: get
+          cors:
+            origin: "*"
+            headers: ${self:custom.allowed-headers}
+          authorizer:
+            name: access-token-authorizer
+            resultTtlInSeconds: 0
+  access-token-authorizer:
+    handler: functions/authorizer/accessTokenAuthorizer.handler
+    name: ${self:service}-access-token-authorizer
+    environment:
+      REGION: ap-northeast-2
+      USER_POOL_ID: ap-northeast-2_9dMV2NiE4
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - lambda:InvokeFunction
+        Resource: "*"
+
 
