@@ -1,11 +1,28 @@
+const cookieParser = require('cookie-parser');
 const express = require('express');
+const cors = require('cors');
+const path = require('path');
+
+const env_path =
+  process.env.NODE_ENV === 'production'
+    ? '.env.production'
+    : '.env.development';
+require('dotenv').config({ path: path.join(__dirname, env_path) });
+
+const authorization = require('@/controllers/authorization');
+const member = require('@/controllers/member');
+
 const app = express();
-const port = 3000;
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+app
+  .use(cors({ origin: process.env.ALLOW_ORIGIN, credentials: true }))
+  .use(express.urlencoded({ extended: true }))
+  .use(express.json())
+  .use(cookieParser());
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+app.use('/member', member);
+app.use('/', authorization);
+
+app.listen(process.env.PORT, () => {
+  console.log(`application listening on port ${process.env.PORT}`);
 });
