@@ -1,9 +1,11 @@
-const serverless = require('serverless-http');
 const express = require('express');
 const app = express();
+const port = 3000;
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-module.exports.handler = serverless(app);
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
