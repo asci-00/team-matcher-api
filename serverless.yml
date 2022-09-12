@@ -12,27 +12,45 @@ provider:
   region: ap-northeast-2
 
 custom:
+  stage: development
+  env: ${file(./env.${self:custom.stage}.json)}
   allowed-headers:
     - Content-Type
     - Authorization
     - Cache-Control
     - Accept-Enconding
     - Content-Encoding
+    - Set-Cookie
+    - Access-Control-Expose-Headers
 
 functions:
-  test-function:
-    handler: functions/member/getMember.handler
-    name: ${self:service}-get-member
+  login-user:
+    handler: functions/authorizer/login.handler
+    name: ${self:service}-login-user
+    environment:
+      CLIENT_ID: ${self:custom.env.CLIENT_ID}
+      CLIENT_SECRET: ${self:custom.env.CLIENT_SECRET}
+      CODE_REQUEST_URI: ${self:custom.env.CODE_REQUEST_URI}
+      TOKEN_REQUEST_URI: ${self:custom.env.TOKEN_REQUEST_URI}
+      LOGIN_REQUEST_URI: ${self:custom.env.LOGIN_REQUEST_URI}
+      LOGIN_REDIRECT_URI: ${self:custom.env.LOGIN_REDIRECT_URI}
     events:
       - http:
-          path: /member
+          path: /login
           method: get
           cors:
             origin: "*"
             headers: ${self:custom.allowed-headers}
-          authorizer:
-            name: access-token-authorizer
-            resultTtlInSeconds: 0
+  signup-user:
+    handler: functions/authorizer/signup.handler
+    name: ${self:service}-signup-user
+    events:
+      - http:
+          path: /signup
+          method: post
+          cors:
+            origin: "*"
+            headers: ${self:custom.allowed-headers}
   access-token-authorizer:
     handler: functions/authorizer/accessTokenAuthorizer.handler
     name: ${self:service}-access-token-authorizer
@@ -44,5 +62,20 @@ functions:
         Action:
           - lambda:InvokeFunction
         Resource: "*"
+
+  read-member:
+    handler: functions/member/getMember.handler
+    name: ${self:service}-read-member
+    events:
+      - http:
+          path: /member
+          method: get
+          cors:
+            origin: "*"
+            headers: ${self:custom.allowed-headers}
+          authorizer:
+            name: access-token-authorizer
+            resultTtlInSeconds: 0
+            type: request
 
 

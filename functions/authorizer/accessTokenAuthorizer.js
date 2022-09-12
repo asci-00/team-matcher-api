@@ -2,14 +2,16 @@ const jsonwebtoken = require('jsonwebtoken');
 const jwkToPem = require('jwk-to-pem');
 const axios = require('axios');
 const AWS = require('aws-sdk');
+const { parseCookie } = require('../../utils/common');
 
-console.log('Loading function');
+console.log('authorizer function running');
 
 const { REGION, USER_POOL_ID } = process.env;
 
 const validateToken = async (event, context) => {
   const iss = `https://cognito-idp.${REGION}.amazonaws.com/${USER_POOL_ID}`;
-  const { authorizationToken: token } = event;
+  const cookies = parseCookie(event.headers.Cookie);
+  const { access_token: token } = cookies;
 
   const { kid } = decodeTokenHeader(token);
 
