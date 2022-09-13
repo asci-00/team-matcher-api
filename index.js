@@ -14,6 +14,8 @@ const member = require('@/controllers/member');
 
 const app = express();
 
+console.log(process.env.ALLOW_ORIGIN);
+
 app
   .use(cors({ origin: process.env.ALLOW_ORIGIN, credentials: true }))
   .use(express.urlencoded({ extended: true }))

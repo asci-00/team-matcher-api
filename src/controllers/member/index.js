@@ -1,17 +1,17 @@
-const authorizer = require('@/services/authorizer');
-const getConnection = require('@/utils/dbconnect');
+const authorizer = require('@/services/authorization/authorizer');
+const { getAllUser } = require('@/services/authorization/user');
 const router = require('express').Router();
 
-const readMember = async (req, res) => {
-  const client = await getConnection();
+const readMemberList = async (req, res) => {
+  const data = await getAllUser();
 
-  const result = await client.query('SELECT * FROM dev.user');
+  console.log(data);
 
-  console.log(result);
-  client.release();
-  res.send({ message: 'success! good', rows: [] });
+  // console.log(result);
+  // client.release();
+  res.send({ message: 'success! good', rows: [...data] });
 };
 
-router.get('/', authorizer, readMember);
+router.get('/', authorizer, readMemberList);
 
 module.exports = router;

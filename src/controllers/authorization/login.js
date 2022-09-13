@@ -1,10 +1,10 @@
+const { findUserByEmail } = require('@/services/authorization/user');
+const jwt = require('jsonwebtoken');
 const axios = require('axios');
 const qs = require('qs');
-const login = async (req, res) => {
-  // const db = await connection();
 
+const login = async (req, res) => {
   const { code } = req.query;
-  console.log(code);
   const {
     OAUTH_CLIENT_ID,
     OAUTH_CLIENT_SECRET,
@@ -32,10 +32,17 @@ const login = async (req, res) => {
       }),
     });
 
-    res
-      .cookie('refresh_token', refresh_token)
-      .cookie('access_token', access_token)
-      .redirect(LOGIN_REDIRECT_URI);
+    const { email } = jwt.decode(id_token, { completed: true });
+    const existUser = await findUserByEmail(email);
+
+    if (existUser.length) {
+      res
+        .cookie('refresh_token', refresh_token)
+        .cookie('access_token', access_token)
+        .redirect(LOGIN_REDIRECT_URI);
+    } else {
+      res.redirect(LOGIN_REDIRECT_URI + '/signup');
+    }
   } catch (err) {
     console.log(err.response.data);
     res.status(401).send({ error: 'Unauthorized' });
