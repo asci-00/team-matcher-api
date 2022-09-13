@@ -20,5 +20,4 @@ jobs:
           aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
       - run: npm ci
-      - run: NODE_ENV=production npm run start --if-present
       - run: aws s3 sync . s3://bucket-team-matcher/api-server --quiet --delete
