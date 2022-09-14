@@ -20,7 +20,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: zip distributions
-        run: zip -r api.zip ./*
+        run: zip -r api.zip .
 
       - name: AWS configure credentials
         uses: aws-actions/configure-aws-credentials@v1
