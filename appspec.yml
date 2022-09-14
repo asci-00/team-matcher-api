@@ -12,10 +12,10 @@ permissions:
     group: ubuntu
 
 hooks:
- BeforeInstall:
-   - location: scripts/init.sh
-     timeout: 300
-     runas: ubuntu
+#  BeforeInstall:
+#    - location: scripts/init.sh
+#      timeout: 300
+#      runas: ubuntu
   AfterInstall:
     - location: scripts/deploy.sh
       timeout: 300
