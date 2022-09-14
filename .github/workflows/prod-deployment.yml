@@ -23,7 +23,7 @@ jobs:
         working-directory: .
         run: |
           touch .env.production
-          echo ${{ secrets.ENV }} >> .env.production
+          echo "${{ secrets.ENV }}" >> .env.production
           ls
 
       - name: zip distributions

@@ -2,5 +2,5 @@
 REPOSITORY=/home/ubuntu/api-server
 
 cd $REPOSITORY
-sudo pm2 kill
-rm -rf *
+sudo /usr/bin/pm2 kill
+rm -rf * !(.evn*)
