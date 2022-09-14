@@ -22,6 +22,9 @@ app
   .use(express.json())
   .use(cookieParser());
 
+app.use('/health-check', (req, res) =>
+  res.status(200).send({ message: 'health!' })
+);
 app.use('/member', member);
 app.use('/', authorization);
 
