@@ -22,6 +22,7 @@ jobs:
       - name: create env file
         working-directory: .
         run:
+          touch .env.production
           cat << EOF >> .env.production
           ${{ secrets.ENV }}
           EOF
