@@ -25,6 +25,7 @@ jobs:
           cat << EOF >> .env.production
           ${{ secrets.ENV }}
           EOF
+          ls
 
       - name: zip distributions
         run: zip -r api.zip ./*
