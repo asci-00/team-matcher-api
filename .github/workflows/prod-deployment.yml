@@ -21,7 +21,7 @@ jobs:
 
       - name: create env file
         working-directory: .
-        run:
+        run: |
           touch .env.production
           echo ${{ secrets.ENV }} >> .env.production
           ls
