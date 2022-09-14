@@ -2,5 +2,5 @@
 REPOSITORY=/home/ubuntu/api-server
 
 cd $REPOSITORY
-npm install
-sudo pm2 start npm run start
+sudo pm2 kill
+rm -rf *
