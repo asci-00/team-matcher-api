@@ -48,5 +48,5 @@ jobs:
         run: aws deploy create-deployment
           --application-name team-matcher-codedeploy
           --deployment-config-name CodeDeployDefault.OneAtATime
-          --deployment-group-name team-matcher-codedeploy
+          --deployment-group-name deploy-group
           --s3-location bucket=team-matcher-bucket,bundleType=zip,key=api-server/api.zip
