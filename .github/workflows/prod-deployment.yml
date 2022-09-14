@@ -22,7 +22,8 @@ jobs:
       - name: create env file
         working-directory: .
         run:
-          echo "${{ secrets.ENV }}" >> .env.production
+          touch .env.production
+          echo ${{ secrets.ENV }} >> .env.production
           ls
 
       - name: zip distributions
