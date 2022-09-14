@@ -23,7 +23,7 @@ jobs:
         run: npm install
 
       - name: create env file
-        working-directory: ./server
+        working-directory: .
         run:
           touch .env.production
           cat << EOF >> .env.production
